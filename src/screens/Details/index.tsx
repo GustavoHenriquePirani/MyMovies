@@ -81,18 +81,19 @@ export function Details() {
 
   // Mapeamento estático das bandeiras usando nomes traduzidos
   const flagImages: { [key: string]: any } = {
-    "Brasil": require("../../public/bandeiras/Brasil.png"),
+    Brasil: require("../../public/bandeiras/Brasil.png"),
     "Estados Unidos": require("../../public/bandeiras/Estados Unidos.png"),
     "Reino Unido": require("../../public/bandeiras/Reino Unido.png"),
-    "Índia": require("../../public/bandeiras/Índia.png"),
-    "Rússia": require("../../public/bandeiras/Rússia.png"),
-    "Japão": require("../../public/bandeiras/Japão.png"),
-    "China": require("../../public/bandeiras/China.png"),
-    "França": require("../../public/bandeiras/França.png"),
-    "Alemanha": require("../../public/bandeiras/Alemanha.png"),
-    "Itália": require("../../public/bandeiras/Itália.png"),
+    Índia: require("../../public/bandeiras/Índia.png"),
+    Rússia: require("../../public/bandeiras/Rússia.png"),
+    Japão: require("../../public/bandeiras/Japão.png"),
+    China: require("../../public/bandeiras/China.png"),
+    França: require("../../public/bandeiras/França.png"),
+    Alemanha: require("../../public/bandeiras/Alemanha.png"),
+    Itália: require("../../public/bandeiras/Itália.png"),
     "Coreia do Sul": require("../../public/bandeiras/Coreia do Sul.png"),
-    "Nigéria": require("../../public/bandeiras/Nigéria.png"),
+    Nigéria: require("../../public/bandeiras/Nigéria.png"),
+    México: require("../../public/bandeiras/México.png"),
   };
 
   const fetchMovieDetails = async () => {
@@ -313,9 +314,19 @@ export function Details() {
 
             {/* Sinopse do filme */}
             <Text style={styles.overviewText}>
-              {movieDetails?.overview && movieDetails.overview.trim() !== ""
-                ? movieDetails.overview
-                : omdbDetails?.Plot || ""}
+              {
+                movieDetails?.overview &&
+                typeof movieDetails.overview === "string" &&
+                movieDetails.overview.trim() !== "" &&
+                movieDetails.overview !== "N/A"
+                  ? movieDetails.overview
+                  : omdbDetails &&
+                    typeof omdbDetails.Plot === "string" &&
+                    omdbDetails.Plot.trim() !== "" &&
+                    omdbDetails.Plot !== "N/A"
+                  ? omdbDetails.Plot
+                  : "Sinopse não disponível."
+              }
             </Text>
 
             {/* Informações sobre o filme */}
@@ -428,12 +439,17 @@ export function Details() {
                   actors = tmdbCredits.cast
                     .slice(0, 7)
                     .map((actor) => {
-                      // Remove ' (voice)' do personagem (isso no caso de animações)
-                      const character = actor.character.replace(
-                        /\s*\(voice\)/i,
-                        ""
-                      );
-                      return `${actor.name} (${character})`;
+                      if (!(actor.character.trim() === "")) {
+                        // Remove ' (voice)' do personagem (isso no caso de animações)
+                        const character = actor.character.replace(
+                          /\s*\(voice\)/i,
+                          ""
+                        );
+                        return `${actor.name} (${character})`;
+                      } else {
+                        // No caso de nao ter personagem, só mostra o nome
+                        return `${actor.name}`;
+                      }
                     })
                     .join(", ");
                 } else if (
@@ -652,24 +668,25 @@ export function Details() {
 
                 const countryData = translateCountry(countries);
                 const singleCountry = countryData.length === 1 ? countryData[0] : null;
-                const flagImage = singleCountry ? flagImages[singleCountry.traducao] : null;
+                const flagImage = singleCountry
+                  ? flagImages[singleCountry.traducao]
+                  : null;
 
                 return (
                   <View style={{ marginBottom: 10 }}>
                     <Text style={styles.omdbText}>País(es) de Produção:</Text>
                     {singleCountry && flagImage ? (
                       <View style={styles.lineNota}>
-                        <Image
-                          source={flagImage}
-                          style={styles.logoNota}
-                        />
+                        <Image source={flagImage} style={styles.logoNota} />
                         <Text style={styles.textoNota}>
                           {singleCountry.traducao}
                         </Text>
                       </View>
                     ) : (
                       <Text style={{ color: "#fff", fontSize: 14 }}>
-                        {countryData.map(country => country.traducao).join(", ")}
+                        {countryData
+                          .map((country) => country.traducao)
+                          .join(", ")}
                       </Text>
                     )}
                   </View>
