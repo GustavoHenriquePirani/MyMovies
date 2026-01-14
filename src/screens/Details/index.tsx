@@ -7,17 +7,16 @@ import {
   Star,
   TicketIcon,
 } from "phosphor-react-native";
-import { OMDB_API_KEY } from "@env";
 import {
   TouchableOpacity,
   View,
   Text,
   Image,
   ScrollView,
-  RefreshControl,
   ActivityIndicator,
+  Animated,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { api, fetchOMDbMovie } from "../../services/api";
 import styles from "./styles";
 import { formatDate } from "../../functions/formatDate";
@@ -73,6 +72,9 @@ type RouterProps = {
 
 export function Details() {
   const route = useRoute();
+  const iconRottenTranslateX = useRef(new Animated.Value(-150)).current;
+  const iconIMDbTranslateX = useRef(new Animated.Value(-150)).current;
+  const iconMetaTranslateX = useRef(new Animated.Value(-150)).current;
   const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null);
   const [omdbDetails, setOmdbDetails] = useState<OMDbDetails | null>(null);
   const [tmdbCredits, setTmdbCredits] = useState<TMDbCredits | null>(null);
@@ -124,11 +126,37 @@ export function Details() {
   };
 
   useEffect(() => {
+    // Reset animação quando mudar de filme
+    iconRottenTranslateX.setValue(-50);
+    iconIMDbTranslateX.setValue(-50);
+    iconMetaTranslateX.setValue(-50);
     setMovieDetails(null);
     setOmdbDetails(null);
     setTmdbCredits(null);
     fetchMovieDetails();
   }, [movieId]);
+
+  useEffect(() => {
+    if (movieDetails && !loading) {
+       Animated.timing(iconRottenTranslateX, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: false,
+      }).start();
+
+       Animated.timing(iconIMDbTranslateX, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: false,
+      }).start();
+
+       Animated.timing(iconMetaTranslateX, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [movieDetails, loading]);
 
   const onRefresh = async () => {
     await fetchMovieDetails();
@@ -314,19 +342,17 @@ export function Details() {
 
             {/* Sinopse do filme */}
             <Text style={styles.overviewText}>
-              {
-                movieDetails?.overview &&
-                typeof movieDetails.overview === "string" &&
-                movieDetails.overview.trim() !== "" &&
-                movieDetails.overview !== "N/A"
-                  ? movieDetails.overview
-                  : omdbDetails &&
-                    typeof omdbDetails.Plot === "string" &&
-                    omdbDetails.Plot.trim() !== "" &&
-                    omdbDetails.Plot !== "N/A"
-                  ? omdbDetails.Plot
-                  : "Sinopse não disponível."
-              }
+              {movieDetails?.overview &&
+              typeof movieDetails.overview === "string" &&
+              movieDetails.overview.trim() !== "" &&
+              movieDetails.overview !== "N/A"
+                ? movieDetails.overview
+                : omdbDetails &&
+                  typeof omdbDetails.Plot === "string" &&
+                  omdbDetails.Plot.trim() !== "" &&
+                  omdbDetails.Plot !== "N/A"
+                ? omdbDetails.Plot
+                : "Sinopse não disponível."}
             </Text>
 
             {/* Informações sobre o filme */}
@@ -342,10 +368,16 @@ export function Details() {
                       (r) => r.Source === "Rotten Tomatoes"
                     ) && (
                       <View style={styles.lineNota}>
-                        <Image
-                          source={require("../../public/rotten.png")}
-                          style={styles.logoNota}
-                        />
+                        <Animated.View
+                          style={{
+                            transform: [{ translateX: iconRottenTranslateX }],
+                          }}
+                        >
+                          <Image
+                            source={require("../../public/rotten.png")}
+                            style={styles.logoNota}
+                          />
+                        </Animated.View>
                         <Text style={styles.textoNota}>
                           Rotten Tomatoes:{" "}
                           {
@@ -362,10 +394,16 @@ export function Details() {
                       (r) => r.Source === "Internet Movie Database"
                     ) && (
                       <View style={styles.lineNota}>
-                        <Image
-                          source={require("../../public/imdb.png")}
-                          style={styles.logoNota}
-                        />
+                        <Animated.View
+                          style={{
+                            transform: [{ translateX: iconIMDbTranslateX }],
+                          }}
+                        >
+                          <Image
+                            source={require("../../public/imdb.png")}
+                            style={styles.logoNota}
+                          />
+                        </Animated.View>
                         <Text style={styles.textoNota}>
                           IMDb:{" "}
                           {
@@ -382,10 +420,16 @@ export function Details() {
                       (r) => r.Source === "Metacritic"
                     ) && (
                       <View style={styles.lineNota}>
-                        <Image
-                          source={require("../../public/metacritic.png")}
-                          style={styles.logoNota}
-                        />
+                        <Animated.View
+                          style={{
+                            transform: [{ translateX: iconMetaTranslateX }],
+                          }}
+                        >
+                          <Image
+                            source={require("../../public/metacritic.png")}
+                            style={styles.logoNota}
+                          />
+                        </Animated.View>
                         <Text style={styles.textoNota}>
                           Metacritic:{" "}
                           {
@@ -462,7 +506,13 @@ export function Details() {
                 return actors ? (
                   <View style={{ marginBottom: 10 }}>
                     <Text style={styles.omdbText}>Atores:</Text>
-                    <Text style={{ color: "#fff", fontSize: 14 }}>
+                    <Text
+                      style={{
+                        color: "#fff",
+                        fontSize: 14,
+                        textAlign: "justify",
+                      }}
+                    >
                       {actors}
                     </Text>
                   </View>
@@ -667,7 +717,8 @@ export function Details() {
                 if (!countries) return null;
 
                 const countryData = translateCountry(countries);
-                const singleCountry = countryData.length === 1 ? countryData[0] : null;
+                const singleCountry =
+                  countryData.length === 1 ? countryData[0] : null;
                 const flagImage = singleCountry
                   ? flagImages[singleCountry.traducao]
                   : null;
@@ -695,7 +746,7 @@ export function Details() {
 
               {/* Prêmios e Indicações - apenas quando OMDb tem dados */}
               {omdbDetails?.Awards && omdbDetails.Awards !== "N/A" && (
-                <View style={{ marginBottom: 10 }}>
+                <View style={{ marginBottom: 25, marginTop: -10 }}>
                   <Text style={styles.omdbText}>Prêmios:</Text>
                   <Text style={{ color: "#fff", fontSize: 14 }}>
                     {translatePremios(omdbDetails.Awards)}
