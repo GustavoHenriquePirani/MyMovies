@@ -63,6 +63,7 @@ export function translateCountry(countries: string): Array<{ original: string; t
     Italy: "Itália",
     "United Kingdom": "Reino Unido",
     Russia: "Rússia",
+    Mexico: "México",
   };
   return countries
     .split(", ")
