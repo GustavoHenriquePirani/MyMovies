@@ -1,4 +1,4 @@
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   BookmarkSimple,
   CalendarBlank,
@@ -80,6 +80,7 @@ export function Details() {
   const [tmdbCredits, setTmdbCredits] = useState<TMDbCredits | null>(null);
   const [loading, setLoading] = useState(false);
   const { movieId } = route.params as RouterProps;
+  const navigation = useNavigation();
 
   // Mapeamento estático das bandeiras usando nomes traduzidos
   const flagImages: { [key: string]: any } = {
@@ -138,19 +139,19 @@ export function Details() {
 
   useEffect(() => {
     if (movieDetails && !loading) {
-       Animated.timing(iconRottenTranslateX, {
+      Animated.timing(iconRottenTranslateX, {
         toValue: 0,
         duration: 400,
         useNativeDriver: false,
       }).start();
 
-       Animated.timing(iconIMDbTranslateX, {
+      Animated.timing(iconIMDbTranslateX, {
         toValue: 0,
         duration: 500,
         useNativeDriver: false,
       }).start();
 
-       Animated.timing(iconMetaTranslateX, {
+      Animated.timing(iconMetaTranslateX, {
         toValue: 0,
         duration: 600,
         useNativeDriver: false,
@@ -175,13 +176,19 @@ export function Details() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 25, bottom: 25, left: 25, right: 25 }}
+        >
           <CaretLeftIcon color="#fff" size={28} weight="light" />
         </TouchableOpacity>
 
         <Text style={styles.headerText}>Detalhes do Filme</Text>
 
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity
+          onPress={() => {}}
+          hitSlop={{ top: 25, bottom: 25, left: 25, right: 25 }}
+        >
           <BookmarkSimple color="#fff" size={28} weight="light" />
         </TouchableOpacity>
       </View>
