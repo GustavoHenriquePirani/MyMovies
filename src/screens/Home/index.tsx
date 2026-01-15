@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { MagnifyingGlassIcon } from "phosphor-react-native";
 import { useNavigation } from "@react-navigation/native";
-import { CardMovies } from "../../components/CardMovies";
+import { CardMovies, CardTopMovies } from "../../components/CardMovies";
 import { useEffect, useState } from "react";
 import { api } from "../../services/api";
 import styles from "./styles";
@@ -22,6 +22,7 @@ interface MovieHome {
 export function Home() {
   const [discoveryMovies, setDiscoveryMovies] = useState<MovieHome[]>([]);
   const [searchResultMovies, setSearchResultMovies] = useState<MovieHome[]>([]);
+  const [topTenMovies, setTopTenMovies] = useState<MovieHome[]>([]);
   const navigation = useNavigation();
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -29,8 +30,24 @@ export function Home() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
+    fetchTopMovies();
     loadMoreData();
   }, []);
+
+  // Função para carregar os 10 mais populares e com melhores avaliações
+  const fetchTopMovies = async () => {
+    setLoading(true);
+    const response = await api.get("/discover/movie", {
+      params: {
+        sort_by: "vote_average.desc",
+        "vote_count.gte": 1000,
+        "vote_average.gte": 8,
+        language: "pt-BR",
+      },
+    });
+    setTopTenMovies(response.data.results.slice(0, 10));
+    setLoading(false);
+  };
 
   // Função para carregar mais dados quando o usuário rolar até o final da lista
   const loadMoreData = async () => {
@@ -76,21 +93,32 @@ export function Home() {
     />
   );
 
+  const renderTopMovieItem = ({ item, index }: { item: MovieHome; index: number }) => (
+  <CardTopMovies
+    data={item}
+    position={index + 1} // index começa em 0, então +1 para exibir de 1 a 10
+    onPress={() => navigation.navigate("Details", { movieId: item.id })}
+  />
+);
+
   const movieData = search.length > 2 ? searchResultMovies : discoveryMovies;
 
   return (
     <View style={styles.container}>
       <Text style={styles.headerText}>O que você quer assistir hoje?</Text>
-      <View style={styles.searchBox}>
-        <TextInput
-          style={styles.searchBoxText}
-          placeholder="Buscar"
-          value={search}
-          onChangeText={handleSearch}
+
+      <View style={styles.containerTopMovies}>
+        <FlatList
+          data={topTenMovies}
+          horizontal
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderTopMovieItem}
+          showsHorizontalScrollIndicator={false}
         />
-        <MagnifyingGlassIcon size={24} weight="light" color="#fff" />
+        {loading && <ActivityIndicator size={50} color="#0296e5" />}
       </View>
 
+      <Text style={styles.availableMoviesText}> Filmes disponíveis</Text>
       <View style={styles.containerMovies}>
         <FlatList
           data={movieData}

@@ -753,7 +753,7 @@ export function Details() {
 
               {/* Prêmios e Indicações - apenas quando OMDb tem dados */}
               {omdbDetails?.Awards && omdbDetails.Awards !== "N/A" && (
-                <View style={{ marginBottom: 25, marginTop: -10 }}>
+                <View style={{ marginBottom: 25 }}>
                   <Text style={styles.omdbText}>Prêmios:</Text>
                   <Text style={{ color: "#fff", fontSize: 14 }}>
                     {translatePremios(omdbDetails.Awards)}
