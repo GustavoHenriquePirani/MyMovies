@@ -14,7 +14,7 @@ export function TabRoutes() {
       screenOptions={{
         tabBarStyle: {
           backgroundColor: "#1a1a1a",
-          height: 78,
+          height:90,
           alignItems: "center",
           borderTopWidth: 1,
           borderTopColor: "#0296e5",
