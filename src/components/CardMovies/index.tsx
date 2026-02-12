@@ -1,4 +1,4 @@
-import { Pressable, Image, Text } from "react-native";
+import { Pressable, Image } from "react-native";
 import styles from "./styles";
 
 interface Movie {
@@ -21,26 +21,6 @@ export function CardMovies({ data, ...rest }: Props) {
           uri: `https://image.tmdb.org/t/p/w500${data.poster_path}`,
         }}
       />
-    </Pressable>
-  );
-}
-
-export function CardTopMovies({ data, position, ...rest }: Props) {
-  return (
-    <Pressable {...rest} style={styles.cardTopMovies}>
-      <Image
-        style={styles.cardTopImage}
-        source={{
-          uri: `https://image.tmdb.org/t/p/w500${data.poster_path}`,
-        }}
-      />
-      {position && (
-        <Text
-          style={styles.numberPosition}
-        >
-          {position}
-        </Text>
-      )}
     </Pressable>
   );
 }
