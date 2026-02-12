@@ -41,28 +41,16 @@ const styles = StyleSheet.create({
     marginBottom: -30,
   },
 
-  containerTopMovies: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
-    marginBottom: -95,
-    marginTop: 15,
-  },
-
-  noResultText: {
-    color: "#fff",
-    fontSize: 18,
-    textAlign: "center",
-    marginVertical: 10,
-  },
-
   availableMoviesText: {
     fontSize: 16,
     lineHeight: 45,
     color: "#ffffff",
     marginHorizontal: 6,
     fontWeight: "600",
+  },
+
+  genresContainer: {
+    flex: 1,
   },
 });
 

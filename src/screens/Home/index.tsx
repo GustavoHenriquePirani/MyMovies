@@ -7,7 +7,8 @@ import {
 } from "react-native";
 import { MagnifyingGlassIcon } from "phosphor-react-native";
 import { useNavigation } from "@react-navigation/native";
-import { CardMovies, CardTopMovies } from "../../components/CardMovies";
+import { CardMovies } from "../../components/CardMovies";
+import { CardTopMovies } from "../../components/CardTopMoveis";
 import { useEffect, useState } from "react";
 import { api } from "../../services/api";
 import styles from "./styles";
@@ -34,18 +35,32 @@ export function Home() {
     loadMoreData();
   }, []);
 
-  // Função para carregar os 10 mais populares e com melhores avaliações
   const fetchTopMovies = async () => {
     setLoading(true);
-    const response = await api.get("/discover/movie", {
-      params: {
-        sort_by: "vote_average.desc",
-        "vote_count.gte": 1000,
-        "vote_average.gte": 8,
-        language: "pt-BR",
-      },
-    });
-    setTopTenMovies(response.data.results.slice(0, 10));
+    let allResults = [];
+    let page = 1;
+    let totalPages = 1;
+
+    while (page <= totalPages) {
+      const response = await api.get("/discover/movie", {
+        params: {
+          sort_by: "vote_average.desc",
+          "vote_count.gte": 20000,
+          "vote_average.gte": 8,
+          language: "pt-BR",
+          page,
+        },
+      });
+      allResults = allResults.concat(response.data.results);
+      totalPages = response.data.total_pages;
+      page++;
+    }
+
+    const top10 = allResults
+      .sort((a, b) => b.vote_average - a.vote_average)
+      .slice(0, 10);
+
+    setTopTenMovies(top10);
     setLoading(false);
   };
 
@@ -93,13 +108,19 @@ export function Home() {
     />
   );
 
-  const renderTopMovieItem = ({ item, index }: { item: MovieHome; index: number }) => (
-  <CardTopMovies
-    data={item}
-    position={index + 1} // index começa em 0, então +1 para exibir de 1 a 10
-    onPress={() => navigation.navigate("Details", { movieId: item.id })}
-  />
-);
+  const renderTopMovieItem = ({
+    item,
+    index,
+  }: {
+    item: MovieHome;
+    index: number;
+  }) => (
+    <CardTopMovies
+      data={item}
+      position={index + 1} // index começa em 0, então +1 para exibir de 1 a 10
+      onPress={() => navigation.navigate("Details", { movieId: item.id })}
+    />
+  );
 
   const movieData = search.length > 2 ? searchResultMovies : discoveryMovies;
 

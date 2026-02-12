@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import { useEffect, useState, useRef } from "react";
 import { api, fetchOMDbMovie } from "../../services/api";
+import { useFavorites } from "../../contexts/FavoritesContext";
 import styles from "./styles";
 import { formatDate } from "../../functions/formatDate";
 import {
@@ -81,6 +82,8 @@ export function Details() {
   const [loading, setLoading] = useState(false);
   const { movieId } = route.params as RouterProps;
   const navigation = useNavigation();
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites();
+  const isMovieFavorite = movieDetails ? isFavorite(movieDetails.id) : false;
 
   // Mapeamento estático das bandeiras usando nomes traduzidos
   const flagImages: { [key: string]: any } = {
@@ -186,10 +189,33 @@ export function Details() {
         <Text style={styles.headerText}>Detalhes do Filme</Text>
 
         <TouchableOpacity
-          onPress={() => {}}
+          onPress={() => {
+            if (movieDetails) {
+              if (isMovieFavorite) {
+                removeFavorite(movieDetails.id);
+              } else {
+                addFavorite({
+                  id: movieDetails.id,
+                  title: movieDetails.title,
+                  poster_path: movieDetails.poster_path,
+                  vote_average: movieDetails.vote_average,
+                  genres: movieDetails.genres,
+                  overview:
+                    movieDetails.overview ||
+                    (omdbDetails?.Plot !== "N/A"
+                      ? (omdbDetails?.Plot ?? "")
+                      : ""),
+                });
+              }
+            }
+          }}
           hitSlop={{ top: 25, bottom: 25, left: 25, right: 25 }}
         >
-          <BookmarkSimple color="#fff" size={28} weight="light" />
+          <BookmarkSimple
+            color={isMovieFavorite ? "#FF8700" : "#fff"}
+            size={28}
+            weight={isMovieFavorite ? "fill" : "light"}
+          />
         </TouchableOpacity>
       </View>
 
@@ -355,11 +381,11 @@ export function Details() {
               movieDetails.overview !== "N/A"
                 ? movieDetails.overview
                 : omdbDetails &&
-                  typeof omdbDetails.Plot === "string" &&
-                  omdbDetails.Plot.trim() !== "" &&
-                  omdbDetails.Plot !== "N/A"
-                ? omdbDetails.Plot
-                : "Sinopse não disponível."}
+                    typeof omdbDetails.Plot === "string" &&
+                    omdbDetails.Plot.trim() !== "" &&
+                    omdbDetails.Plot !== "N/A"
+                  ? omdbDetails.Plot
+                  : "Sinopse não disponível."}
             </Text>
 
             {/* Informações sobre o filme */}
@@ -372,7 +398,7 @@ export function Details() {
                     <Text style={styles.omdbText}>Avaliações:</Text>
                     {/* Rotten Tomatoes */}
                     {omdbDetails.Ratings.find(
-                      (r) => r.Source === "Rotten Tomatoes"
+                      (r) => r.Source === "Rotten Tomatoes",
                     ) && (
                       <View style={styles.lineNota}>
                         <Animated.View
@@ -389,7 +415,7 @@ export function Details() {
                           Rotten Tomatoes:{" "}
                           {
                             omdbDetails.Ratings.find(
-                              (r) => r.Source === "Rotten Tomatoes"
+                              (r) => r.Source === "Rotten Tomatoes",
                             )?.Value
                           }
                         </Text>
@@ -398,7 +424,7 @@ export function Details() {
 
                     {/* IMDb */}
                     {omdbDetails.Ratings.find(
-                      (r) => r.Source === "Internet Movie Database"
+                      (r) => r.Source === "Internet Movie Database",
                     ) && (
                       <View style={styles.lineNota}>
                         <Animated.View
@@ -415,7 +441,7 @@ export function Details() {
                           IMDb:{" "}
                           {
                             omdbDetails.Ratings.find(
-                              (r) => r.Source === "Internet Movie Database"
+                              (r) => r.Source === "Internet Movie Database",
                             )?.Value
                           }
                         </Text>
@@ -424,7 +450,7 @@ export function Details() {
 
                     {/* Metacritic */}
                     {omdbDetails.Ratings.find(
-                      (r) => r.Source === "Metacritic"
+                      (r) => r.Source === "Metacritic",
                     ) && (
                       <View style={styles.lineNota}>
                         <Animated.View
@@ -441,7 +467,7 @@ export function Details() {
                           Metacritic:{" "}
                           {
                             omdbDetails.Ratings.find(
-                              (r) => r.Source === "Metacritic"
+                              (r) => r.Source === "Metacritic",
                             )?.Value
                           }
                         </Text>
@@ -455,7 +481,7 @@ export function Details() {
                 let director = undefined;
                 if (tmdbCredits?.crew) {
                   const directors = tmdbCredits.crew.filter(
-                    (person) => person.job === "Director"
+                    (person) => person.job === "Director",
                   );
                   if (directors.length > 0) {
                     director = directors
@@ -494,7 +520,7 @@ export function Details() {
                         // Remove ' (voice)' do personagem (isso no caso de animações)
                         const character = actor.character.replace(
                           /\s*\(voice\)/i,
-                          ""
+                          "",
                         );
                         return `${actor.name} (${character})`;
                       } else {
@@ -535,7 +561,7 @@ export function Details() {
                       person.job === "Writer" ||
                       person.job === "Screenplay" ||
                       person.job === "Story" ||
-                      person.job === "Original Story"
+                      person.job === "Original Story",
                   );
                   if (writers.length > 0) {
                     writer = writers
@@ -567,7 +593,7 @@ export function Details() {
               {(() => {
                 if (!tmdbCredits?.crew) return null;
                 const characterDesigners = tmdbCredits.crew.filter(
-                  (person) => person.job === "Character Designer"
+                  (person) => person.job === "Character Designer",
                 );
                 if (characterDesigners.length === 0) return null;
 
@@ -591,7 +617,7 @@ export function Details() {
                 const animationDirectors = tmdbCredits.crew.filter(
                   (person) =>
                     person.job === "Supervising Animation Director" ||
-                    person.job === "Animation Director"
+                    person.job === "Animation Director",
                 );
                 if (animationDirectors.length === 0) return null;
 
@@ -613,7 +639,7 @@ export function Details() {
               {(() => {
                 if (!tmdbCredits?.crew) return null;
                 const cinematographers = tmdbCredits.crew.filter(
-                  (person) => person.job === "Director of Photography"
+                  (person) => person.job === "Director of Photography",
                 );
                 if (cinematographers.length === 0) return null;
 
@@ -635,7 +661,7 @@ export function Details() {
               {(() => {
                 if (!tmdbCredits?.crew) return null;
                 const editors = tmdbCredits.crew.filter(
-                  (person) => person.job === "Editor"
+                  (person) => person.job === "Editor",
                 );
                 if (editors.length === 0) return null;
 
@@ -657,7 +683,7 @@ export function Details() {
               {(() => {
                 if (!tmdbCredits?.crew) return null;
                 const producers = tmdbCredits.crew.filter(
-                  (person) => person.job === "Producer"
+                  (person) => person.job === "Producer",
                 );
                 if (producers.length === 0) return null;
 
@@ -682,7 +708,7 @@ export function Details() {
                   (person) =>
                     person.job === "Original Music Composer" ||
                     person.job === "Music" ||
-                    person.job === "Composer"
+                    person.job === "Composer",
                 );
                 if (composers.length === 0) return null;
 
